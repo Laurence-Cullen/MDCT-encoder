@@ -1,30 +1,16 @@
 use crate::AMPLIFICATION;
+use csv;
 use std::f32::consts::PI;
-
-/// Apply window function to input samples
-// fn apply_window(input: &[f32], size: usize) -> Vec<f32> {
-//     // Using sine window as described in the Wikipedia article
-//     let mut windowed = vec![0.0; size];
-//     for n in 0..size {
-//         // sin(π/(2N)(n + 0.5)) window function
-//         let window = ((PI / (2.0 * size as f32)) * (n as f32 + 0.5)).sin();
-//         windowed[n] = input[n] * window;
-//     }
-//     windowed
-// }
+use std::fs::OpenOptions;
 
 /// Implement the Modified Discrete Cosine Transform (MDCT) with TDAC
 pub(crate) fn mdct(input: &[f32], size: u32) -> Vec<f32> {
     let N = size / 2;
-    let input_size = input.len();
-
-    // Apply window function first
-    // let windowed = apply_window(input, input_size);
 
     let mut output = vec![0.0; N as usize];
 
     // MDCT formula with normalization factor
-    for k in 0..N {
+    for k in 10..100 {
         output[k as usize] = (2.0 / N as f32)
             * input
                 .iter()
@@ -35,6 +21,21 @@ pub(crate) fn mdct(input: &[f32], size: u32) -> Vec<f32> {
                 })
                 .sum::<f32>();
     }
+
+    // Open file in append mode
+    let file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("mdct_output.csv")
+        .expect("Failed to open CSV file");
+
+    let mut wtr = csv::WriterBuilder::new()
+        .has_headers(false)
+        .from_writer(file);
+
+    wtr.write_record(output.iter().map(|x| x.to_string()))
+        .expect("Failed to write to CSV");
+    wtr.flush().expect("Failed to flush CSV writer");
 
     output
 }
