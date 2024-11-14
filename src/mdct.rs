@@ -10,7 +10,7 @@ pub(crate) fn mdct(input: &[f32], size: u32) -> Vec<f32> {
     let mut output = vec![0.0; N as usize];
 
     // MDCT formula with normalization factor
-    for k in 10..100 {
+    for k in 0..100 {
         output[k as usize] = (2.0 / N as f32)
             * input
                 .iter()
