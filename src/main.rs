@@ -16,24 +16,8 @@ const AMPLIFICATION: f32 = 100.0;
 const LATENCY_TIME_MS: f32 = 1000f32;
 
 fn encode_decode(input: Vec<f32>) -> Vec<f32> {
-    // Break input into chunks of 1024 samples
-    let chunk_size = 1024u32;
-
-    let input_length = input.len();
-
-    // let encoded = Vec::with_capacity(input_length / 2);
-
-    let encoded: Vec<f32> = input
-        .chunks(chunk_size as usize)
-        .flat_map(|(chunk)| mdct::mdct(chunk, chunk_size))
-        .collect();
-
-    let decoded: Vec<f32> = encoded
-        .chunks(chunk_size as usize / 2)
-        .flat_map(|(chunk)| mdct::inverse_mdct(chunk, chunk_size))
-        .collect();
-
-    decoded
+    let window_size = 1024u32;
+    mdct::process_with_tdac(&input, window_size)
 }
 
 fn main() {
@@ -59,7 +43,7 @@ fn main() {
 
     let ring = HeapRb::<f32>::new(latency_samples * 2);
 
-    let runtime_seconds = 10.0;
+    let runtime_seconds = 5.0;
 
     let all_input = Arc::new(Mutex::new(Vec::with_capacity(
         (runtime_seconds * config.sample_rate.0 as f32) as usize,
